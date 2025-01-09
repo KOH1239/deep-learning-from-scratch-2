@@ -1,0 +1,28 @@
+#!/usr/bin/python
+# -*- coding: sjis -*-
+
+from transformers import BertJapaneseTokenizer
+from transformers.models.bert_japanese import tokenization_bert_japanese
+import pickle
+import re
+
+tknz = BertJapaneseTokenizer(vocab_file='vocab.txt', do_lower_case=False,do_basic_tokenize=False)
+tknz.word_tokenizer = tokenization_bert_japanese.MecabTokenizer()
+
+xdata, ydata = [],[]
+with open('test.tsv','r',encoding='utf-8') as f:
+    for line in f:
+        line = line.rstrip()
+        result = re.match('^(\d+)\t(.+?)$', line)
+        ydata.append(int(result.group(1)))
+        sen = result.group(2)
+        tid = tknz.encode(sen)
+        if (len(tid) > 512):  # Å‘å’·‚Í 512
+            tid = tid[:512]
+        xdata.append(tid)
+
+with open('xtest.pkl','bw') as fw:
+    pickle.dump(xdata,fw)
+
+with open('ytest.pkl','bw') as fw:
+    pickle.dump(ydata,fw)
